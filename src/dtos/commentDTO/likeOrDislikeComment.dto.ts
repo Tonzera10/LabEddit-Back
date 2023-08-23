@@ -1,7 +1,7 @@
 import z from "zod";
 
 export interface likeOrDislikeCommentInputDTO {
-  postId: string;
+  commentId: string;
   token: string;
   like: boolean;
 }
@@ -10,7 +10,7 @@ export type likeOrDislikeCommentOutputDTO = undefined;
 
 export const LikeOrDislikeSchema = z
   .object({
-    postId: z.string({
+    commentId: z.string({
       required_error: "'id' é obrigatório",
       invalid_type_error: "'id' deve ser do tipo string",
     }),

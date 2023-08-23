@@ -1,32 +1,28 @@
 import { PostDatabase } from "../database/PostDatabase";
+import { UserDatabase } from "../database/UserDatabase";
 import {
   CreatePostInputDTO,
   CreatePostOutputDTO,
 } from "../dtos/postDTO/createPost.dto";
-import {
-  DeletePostInputDTO,
-  DeletePostOutputDTO,
-} from "../dtos/postDTO/deletePost.dto";
-import {
-  EditPostInputDTO,
-  EditPostOutputDTO,
-} from "../dtos/postDTO/editPost.dto";
 import { GetPostInputDTO, GetPostOutputDTO } from "../dtos/postDTO/getPost.dto";
+import {
+  GetPostByIdInputDTO,
+  GetPostByIdOutputDTO,
+} from "../dtos/postDTO/getPostById.dto";
 import {
   likeOrDislikeInputDTO,
   likeOrDislikeOutputDTO,
 } from "../dtos/postDTO/likeOrDislikePost.dto";
-import { ForbiddenError } from "../error/ForbiddenError";
 import { NotFoundError } from "../error/NotFoundError";
 import { UnauthorizedError } from "../error/UnauthorizedError";
-import { POST_LIKE, Post, likeDislikeDB } from "../models/Post";
-import { USER_ROLES, User } from "../models/User";
+import { POST_LIKE, Post, likeDislikePostDB } from "../models/Post";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager } from "../services/TokenManager";
 
 export class PostBusiness {
   constructor(
     private postDatabase: PostDatabase,
+    private userDatabase: UserDatabase,
     private idGenerator: IdGenerator,
     private tokenManager: TokenManager
   ) {}
@@ -44,21 +40,14 @@ export class PostBusiness {
 
     const id = this.idGenerator.generate();
 
-    const post = new Post(
-      id,
-      content,
-      0,
-      0,
-      new Date().toISOString(),
-      new Date().toISOString(),
-      payload.id,
-      payload.name
-    );
+    const post = new Post(id, content, 0, 0, 0, payload.id, payload.name);
 
     const postDB = post.toDBModel();
     await this.postDatabase.insertPost(postDB);
 
-    const output: CreatePostOutputDTO = undefined;
+    const output: CreatePostOutputDTO = {
+      message: "Post criado com sucesso!",
+    };
 
     return output;
   };
@@ -83,8 +72,7 @@ export class PostBusiness {
         postWithCreatorName.content,
         postWithCreatorName.likes,
         postWithCreatorName.dislikes,
-        postWithCreatorName.created_at,
-        postWithCreatorName.updated_at,
+        postWithCreatorName.comment_count,
         postWithCreatorName.creator_id,
         postWithCreatorName.creator_name
       );
@@ -97,10 +85,10 @@ export class PostBusiness {
     return output;
   };
 
-  public editPost = async (
-    input: EditPostInputDTO
-  ): Promise<EditPostOutputDTO> => {
-    const { idToEdit, content, token } = input;
+  public getPostById = async (
+    input: GetPostByIdInputDTO
+  ): Promise<GetPostByIdOutputDTO> => {
+    const { token, postId } = input;
 
     const payload = this.tokenManager.getPayload(token);
 
@@ -108,65 +96,25 @@ export class PostBusiness {
       throw new UnauthorizedError("token inválido");
     }
 
-    const postDB = await this.postDatabase.findById(idToEdit);
+    const postDB = await this.postDatabase.findById(postId);
 
     if (!postDB) {
-      throw new NotFoundError("post não encontrado");
+      throw new NotFoundError("Id não encontrado");
     }
 
-    if (payload.id !== postDB.creator_id) {
-      throw new ForbiddenError("Somente quem criou o post pode editá-lo");
-    }
+    const userDB = await this.userDatabase.findById(postDB.creator_id);
 
     const post = new Post(
       postDB.id,
       postDB.content,
       postDB.likes,
       postDB.dislikes,
-      postDB.created_at,
-      new Date().toISOString(),
+      postDB.comment_count,
       postDB.creator_id,
-      payload.name
+      userDB.name
     );
 
-    post.setContent(content);
-
-    const updatedPostDB = post.toDBModel();
-
-    await this.postDatabase.updatePost(updatedPostDB);
-
-    const output: EditPostOutputDTO = undefined;
-
-    return output;
-  };
-
-  public deletePost = async (
-    input: DeletePostInputDTO
-  ): Promise<DeletePostOutputDTO> => {
-    const { idToDelete, token } = input;
-
-    const payload = this.tokenManager.getPayload(token);
-
-    if (!payload) {
-      throw new UnauthorizedError("token inválido");
-    }
-
-    const postDB = await this.postDatabase.findById(idToDelete);
-
-    if (!postDB) {
-      throw new NotFoundError("post não encontrado!");
-    }
-
-    if (payload.role !== USER_ROLES.ADMIN) {
-      if (payload.id !== postDB.creator_id) {
-        throw new ForbiddenError("Somente quem criou o post pode editá-lo");
-      }
-    }
-
-    await this.postDatabase.deletePost(idToDelete);
-
-    const output: DeletePostOutputDTO = undefined;
-
+    const output: GetPostByIdOutputDTO = post.toBusinessModel();
     return output;
   };
 
@@ -193,15 +141,14 @@ export class PostBusiness {
       postDBWithCreatorName.content,
       postDBWithCreatorName.likes,
       postDBWithCreatorName.dislikes,
-      postDBWithCreatorName.created_at,
-      postDBWithCreatorName.updated_at,
+      postDBWithCreatorName.comment_count,
       postDBWithCreatorName.creator_id,
       postDBWithCreatorName.creator_name
     );
 
     const likeSQlite = like ? 1 : 0;
 
-    const likeDislikeDB: likeDislikeDB = {
+    const likeDislikeDB: likeDislikePostDB = {
       user_id: payload.id,
       post_id: postId,
       like: likeSQlite,

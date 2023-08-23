@@ -1,13 +1,14 @@
 import z from "zod";
-import { PostModel } from "../../models/Post";
+import { CommentModel } from "../../models/Comment";
 
 export interface GetCommentInputDTO {
   token: string;
+  postId: string;
 }
 
-export type GetCommentOutputDTO = PostModel[];
+export type GetCommentOutputDTO = CommentModel[];
 
-export const GetPostSchema = z
+export const GetCommentSchema = z
   .object({
     token: z
       .string({
@@ -15,5 +16,11 @@ export const GetPostSchema = z
         invalid_type_error: "'token' deve ser do tipo string",
       })
       .min(1, "'token' deve possuir no mínimo 1 caractere"),
+    postId: z
+      .string({
+        required_error: "'post_id' é obrigatório",
+        invalid_type_error: "'post_id' deve ser do tipo string",
+      })
+      .min(1),
   })
   .transform((data) => data as GetCommentInputDTO);

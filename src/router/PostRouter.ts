@@ -3,18 +3,21 @@ import { PostDatabase } from "../database/PostDatabase";
 import { PostBusiness } from "../business/PostBusiness";
 import { PostController } from "../controller/PostController";
 import { IdGenerator } from "../services/IdGenerator";
-import { UserDatabase } from "../database/UserDatabase";
 import { TokenManager } from "../services/TokenManager";
-import { HashManager } from "../services/HashManager";
+import { UserDatabase } from "../database/UserDatabase";
 
 export const postRouter = express.Router();
 
 const postController = new PostController(
-  new PostBusiness(new PostDatabase(), new IdGenerator(), new TokenManager())
+  new PostBusiness(
+    new PostDatabase(),
+    new UserDatabase(),
+    new IdGenerator(),
+    new TokenManager()
+  )
 );
 
 postRouter.post("/", postController.createPost);
 postRouter.get("/", postController.getPosts);
-postRouter.put("/:id", postController.editPost);
-postRouter.delete("/:id", postController.deletePost);
+postRouter.get("/:id", postController.getPostById);
 postRouter.put("/:id/like", postController.likeOrDislikePost);

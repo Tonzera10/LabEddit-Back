@@ -5,7 +5,9 @@ export interface CreatePostInputDTO {
   token: string;
 }
 
-export type CreatePostOutputDTO = undefined;
+export type CreatePostOutputDTO = {
+  message: string;
+};
 
 export const CreatePostSchema = z
   .object({

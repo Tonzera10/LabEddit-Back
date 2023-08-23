@@ -1,52 +1,52 @@
-export interface PostDB {
+export interface CommentDB {
   id: string;
+  post_id: string;
   creator_id: string;
   content: string;
   likes: number;
   dislikes: number;
-  comment_count: number;
 }
 
-export interface PostDBWithCreatorName {
+export interface CommentDBWithCreatorName {
   id: string;
+  post_id: string;
   creator_id: string;
   content: string;
   likes: number;
   dislikes: number;
-  comment_count: number;
   creator_name: string;
 }
 
-export interface PostModel {
+export interface CommentModel {
   id: string;
+  postId: string;
   content: string;
   likes: number;
   dislikes: number;
-  commentCount: number;
   creator: {
     id: string;
     name: string;
   };
 }
 
-export interface likeDislikePostDB {
+export interface likeDislikeCommentDB {
   user_id: string;
-  post_id: string;
+  comment_id: string;
   like: number;
 }
 
-export enum POST_LIKE {
+export enum COMMENT_LIKE {
   ALREADY_LIKED = "ALREADY LIKED",
   ALREADY_DISLIKED = "ALREADY DISLIKED",
 }
 
-export class Post {
+export class Comment {
   constructor(
     private id: string,
+    private post_id: string,
     private content: string,
     private likes: number,
     private dislikes: number,
-    private comment_count: number,
     private creatorId: string,
     private creatorName: string
   ) {}
@@ -57,6 +57,14 @@ export class Post {
 
   public setId(value: string): void {
     this.id = value;
+  }
+
+  public getPost_id(): string {
+    return this.post_id;
+  }
+
+  public setPost_id(value: string): void {
+    this.post_id = value;
   }
 
   public getContent(): string {
@@ -99,18 +107,6 @@ export class Post {
     this.dislikes--;
   };
 
-  public getComments(): number {
-    return this.comment_count;
-  }
-
-  public setComments(value: number): void {
-    this.comment_count = value;
-  }
-
-  public increaseComments(): void {
-    this.comment_count += 1;
-  }
-
   public getCreatorId(): string {
     return this.creatorId;
   }
@@ -127,24 +123,24 @@ export class Post {
     this.creatorName = value;
   }
 
-  public toDBModel(): PostDB {
+  public toDBModel(): CommentDB {
     return {
       id: this.id,
+      post_id: this.post_id,
       creator_id: this.creatorId,
       content: this.content,
       likes: this.likes,
       dislikes: this.dislikes,
-      comment_count: this.comment_count,
     };
   }
 
-  public toBusinessModel(): PostModel {
+  public toBusinessModel(): CommentModel {
     return {
       id: this.id,
+      postId: this.post_id,
       content: this.content,
       likes: this.likes,
       dislikes: this.dislikes,
-      commentCount: this.comment_count,
       creator: {
         id: this.creatorId,
         name: this.creatorName,

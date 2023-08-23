@@ -1,14 +1,23 @@
 import z from "zod";
 
 export interface CreateCommentInputDTO {
+  postId: string;
   content: string;
   token: string;
 }
 
-export type CreateCommentOutputDTO = undefined;
+export type CreateCommentOutputDTO = {
+  message: string;
+};
 
-export const CreatePostSchema = z
+export const CreateCommentSchema = z
   .object({
+    postId: z
+      .string({
+        required_error: "'post_id' é obrigatório",
+        invalid_type_error: "'post_id' deve ser do tipo string",
+      })
+      .min(1),
     content: z
       .string({
         required_error: "'Mensagem' é obrigatório",

@@ -1,12 +1,6 @@
-export enum USER_ROLES {
-  ADMIN = "admin",
-  NORMAL = "normal",
-}
-
 export interface TokenPayload {
   id: string;
   name: string;
-  role: USER_ROLES;
 }
 
 export interface UserDB {
@@ -14,25 +8,19 @@ export interface UserDB {
   name: string;
   email: string;
   password: string;
-  role: USER_ROLES;
-  created_at: string;
 }
 
 export interface UserModel {
   id: string;
   name: string;
   email: string;
-  role: USER_ROLES;
-  createdAt: string;
 }
 export class User {
   constructor(
     private id: string,
     private name: string,
     private email: string,
-    private password: string,
-    private role: USER_ROLES,
-    private createdAt: string
+    private password: string
   ) {}
 
   public getId(): string {
@@ -67,30 +55,12 @@ export class User {
     this.password = value;
   }
 
-  public getRole(): USER_ROLES {
-    return this.role;
-  }
-
-  public setRole(value: USER_ROLES): void {
-    this.role = value;
-  }
-
-  public getCreatedAt(): string {
-    return this.createdAt;
-  }
-
-  public setCreatedAt(value: string): void {
-    this.createdAt = value;
-  }
-
   public toDBModel(): UserDB {
     return {
       id: this.id,
       name: this.name,
       email: this.email,
       password: this.password,
-      role: this.role,
-      created_at: this.createdAt,
     };
   }
 
@@ -99,8 +69,6 @@ export class User {
       id: this.id,
       name: this.name,
       email: this.email,
-      role: this.role,
-      createdAt: this.createdAt,
     };
   }
 }

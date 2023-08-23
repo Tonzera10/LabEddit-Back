@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { postRouter } from "./router/PostRouter";
 import { userRouter } from "./router/UserRouter";
+import { commentRouter } from "./router/CommentRouter";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.listen(Number(process.env.PORT || 3003), () => {
   console.log(`Servidor rodando na porta ${process.env.PORT}`);
 });
 
+app.use("/users", userRouter);
+
 app.use("/posts", postRouter);
 
-app.use("/users", userRouter);
+app.use("/posts", commentRouter);

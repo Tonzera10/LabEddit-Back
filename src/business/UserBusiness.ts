@@ -1,9 +1,9 @@
 import { UserDatabase } from "../database/UserDatabase";
-import { LoginInputDTO, LoginOutputDTO } from "../dtos/userDTO/login.dto";
-import { SignupInputDTO, SignupOutputDTO } from "../dtos/userDTO/signup.dto";
+import { LoginInputDTO, LoginOutputDTO } from "../dtos/userDTO/Login.dto";
+import { SignupInputDTO, SignupOutputDTO } from "../dtos/userDTO/Signup.dto";
 import { BadRequestError } from "../error/BadRequestError";
 import { NotFoundError } from "../error/NotFoundError";
-import { TokenPayload, USER_ROLES, User, UserDB } from "../models/User";
+import { TokenPayload, User } from "../models/User";
 import { HashManager } from "../services/HashManager";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager } from "../services/TokenManager";
@@ -23,14 +23,7 @@ export class UserBusiness {
 
     const hashedPassword = await this.hashMananger.hash(password);
 
-    const user = new User(
-      id,
-      name,
-      email,
-      hashedPassword,
-      USER_ROLES.NORMAL,
-      new Date().toISOString()
-    );
+    const user = new User(id, name, email, hashedPassword);
 
     const userDB = user.toDBModel();
     await this.userDatabase.insertUser(userDB);
@@ -38,12 +31,12 @@ export class UserBusiness {
     const tokenPayload: TokenPayload = {
       id: user.getId(),
       name: user.getName(),
-      role: user.getRole(),
     };
 
     const token = this.tokenManager.createToken(tokenPayload);
 
     const output: SignupOutputDTO = {
+      message: "Usuário criado com sucesso!",
       token,
     };
 
@@ -62,9 +55,7 @@ export class UserBusiness {
       userDB.id,
       userDB.name,
       userDB.email,
-      userDB.password,
-      userDB.role,
-      userDB.created_at
+      userDB.password
     );
 
     const hashedPassword = user.getPassword();
@@ -80,11 +71,11 @@ export class UserBusiness {
     const tokenPayload: TokenPayload = {
       id: user.getId(),
       name: user.getName(),
-      role: user.getRole(),
     };
     const token = this.tokenManager.createToken(tokenPayload);
 
     const output: LoginOutputDTO = {
+      message: "Login executado com sucesso!",
       token,
     };
 
